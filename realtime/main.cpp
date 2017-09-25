@@ -23,7 +23,7 @@ int main()
 
         // create timer to provide new data regularly
         timer theTimer;
-        theTimer.interval( 300 );
+        theTimer.interval( 10 );
         theTimer.elapse([ &t1 ]()
         {
             static int p = 0;

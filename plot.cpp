@@ -92,34 +92,46 @@ void trace::update( paint::graphics& graph )
     int yOffset = myPlot->YOffset();
     double prev;
 
-    // loop over data points
+
 
     if( ! myfRealTime )
     {
+        // loop over data points
         for( auto y : myY )
         {
+            // scale
+            double ys = yOffset - y * s;
+
             if( first )
             {
                 first = false;
-                prev = y;
+                prev = ys;
                 continue;
             }
+
             // draw line from previous to this data point
             graph.line(
-                point(x, yOffset - prev * s),
-                point(x+xinc, yOffset - y * s),
+                point(x, prev),
+                point(x+xinc, ys),
                 myColor);
 
             x += xinc;
-            prev = y;
+            prev = ys;
         }
     }
     else
     {
+        // loop over data points
+
+        // they are stored in a circular buffer
+        // so we have to start with the oldest data point
         int yidx = myRealTimeNext;
         do
         {
-            double y = myY[ yidx ];
+            double y = yOffset - s * myY[ yidx ];
+
+            // the next data point
+            // with wrap-around if the end of the vector is reached
             yidx++;
             if( yidx >= (int)myY.size() )
                 yidx = 0;
@@ -132,14 +144,17 @@ void trace::update( paint::graphics& graph )
             }
             // draw line from previous to this data point
             graph.line(
-                point(x, yOffset - prev * s),
-                point(x+xinc, yOffset - y * s),
+                point( x, prev ),
+                point( x+xinc, y ),
                 myColor);
 
             x += xinc;
             prev = y;
 
         }
+
+        // check for end of circular buffer
+        // ( most recent point )
         while( yidx != myRealTimeNext );
     }
 }
