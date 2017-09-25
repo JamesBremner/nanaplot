@@ -21,8 +21,8 @@ plot::plot( window parent )
         myAxis->update( graph );
 
         // draw all the traces
-        for( auto& t : myTrace )
-            t.update( graph );
+        for( auto t : myTrace )
+            t->update( graph );
     });
 
     myAxis = new axis( this );
@@ -31,13 +31,13 @@ plot::plot( window parent )
 void plot::CalcScale( int w, int h )
 {
     int maxCount = 0;
-    myTrace[0].bounds( myMinY, myMaxY );
+    myTrace[0]->bounds( myMinY, myMaxY );
     for( auto& t : myTrace )
     {
-        if( t.size() > maxCount )
-            maxCount = t.size();
+        if( t->size() > maxCount )
+            maxCount = t->size();
         int min, max;
-        t.bounds( min, max );
+        t->bounds( min, max );
         if( min < myMinY )
             myMinY = min;
         if( max > myMaxY )
@@ -45,8 +45,27 @@ void plot::CalcScale( int w, int h )
     }
 
     myXinc = w / maxCount;
+    if( myMaxY == myMinY )
+        myScale = 1;
+    else
     myScale = h / ( myMaxY - myMinY );
     myYOffset = h + myScale * myMinY;
+}
+void trace::add( const std::vector< double >& y )
+{
+    if( myfRealTime )
+        throw std::runtime_error("nanaplot error: static data added to realtime trace");
+    myY = y;
+}
+void trace::add( double y )
+{
+    if( ! myfRealTime )
+        throw std::runtime_error("nanaplot error: realtime data added to no realtime trace");
+    myY[ myRealTimeNext++ ] = y;
+    if( myRealTimeNext >= (int)myY.size() )
+        myRealTimeNext = 0;
+
+    myPlot->update();
 }
 
 void trace::bounds( int& min, int& max )
@@ -72,22 +91,54 @@ void trace::update( paint::graphics& graph )
     int prev;
 
     // loop over data points
-    for( auto y : myY )
-    {
-        if( first )
-        {
-            first = false;
-            prev = y;
-            continue;
-        }
-        // draw line from previous to this data point
-        graph.line(
-            point(x, yOffset - prev * s),
-            point(x+xinc, yOffset - y * s),
-            myColor);
 
-        x += xinc;
-        prev = y;
+    if( ! myfRealTime )
+    {
+        for( auto y : myY )
+        {
+            if( first )
+            {
+                first = false;
+                prev = y;
+                continue;
+            }
+            // draw line from previous to this data point
+            graph.line(
+                point(x, yOffset - prev * s),
+                point(x+xinc, yOffset - y * s),
+                myColor);
+
+            x += xinc;
+            prev = y;
+        }
+    }
+    else
+    {
+        int yidx = myRealTimeNext;
+        do
+        {
+            double y = myY[ yidx ];
+            yidx++;
+            if( yidx >= (int)myY.size() )
+                yidx = 0;
+
+            if( first )
+            {
+                first = false;
+                prev = y;
+                continue;
+            }
+            // draw line from previous to this data point
+            graph.line(
+                point(x, yOffset - prev * s),
+                point(x+xinc, yOffset - y * s),
+                myColor);
+
+            x += xinc;
+            prev = y;
+
+        }
+        while( yidx != myRealTimeNext );
     }
 }
 

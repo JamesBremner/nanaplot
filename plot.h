@@ -1,5 +1,6 @@
 #include <nana/gui.hpp>
 #include <nana/gui/widgets/label.hpp>
+#include <nana/gui.hpp>
 
 namespace nana
 {
@@ -12,11 +13,39 @@ class trace
 {
 public:
 
-    /// set data
-    void add( const std::vector< double >& y )
+    trace()
+        : myfRealTime( false )
     {
-        myY = y;
+
     }
+    /** Convert trace to real time operation
+        @param[in] w number of data points to display
+
+        Data points older than w scroll off the left edge of the plot and are lost
+    */
+    void realTime( int w )
+    {
+        myfRealTime = true;
+        myRealTimeNext = 0;
+        myY.clear();
+        myY.resize( w );
+    }
+
+    /** set static data
+        @param[in] y vector of data points to display
+
+        An exception is thrown when this is called
+        for a trace that has been converted to real time
+    */
+    void add( const std::vector< double >& y );
+
+    /** add new value to real time data
+        @param[in] y the new data point
+
+        An exception is thrown when this is called
+        for a trace that has not been converted to real time
+    */
+    void add( double y );
 
     /// set color
     void color( const colors & clr )
@@ -44,6 +73,8 @@ private:
     plot * myPlot;
     std::vector< double > myY;
     colors myColor;
+    bool myfRealTime;
+    int myRealTimeNext;
 };
 
 class axis
@@ -82,13 +113,34 @@ public:
         delete myAxis;
     }
 
-    /** Add a data trace
-        @param[in] t the data trace to be added
+    /** Add static trace
+        @return reference to new trace
+
+        The data in a static trace does not change
     */
-    void add( trace& t )
+    trace& AddStaticTrace()
     {
-        t.Plot( this );
+        trace * t = new trace();
+        t->Plot( this );
         myTrace.push_back( t );
+        return *t;
+    }
+
+    /** Add real time trace
+        @param[in] w number of recent data points to display
+        @return reference to new trace
+
+        The data in a real time trace receives new values from time to time
+        The display shows w recent values.  Older values scroll off the
+        left hand side of the plot and disappear.
+    */
+    trace& AddRealTimeTrace( int w )
+    {
+        trace * t = new trace();
+        t->Plot( this );
+        t->realTime( w );
+        myTrace.push_back( t );
+        return *t;
     }
 
     int xinc()
@@ -116,6 +168,11 @@ public:
         return myParent;
     }
 
+    void update()
+    {
+        API::refresh_window( myParent );
+    }
+
 private:
 
     ///window where plot will be drawn
@@ -126,7 +183,7 @@ private:
     axis * myAxis;
 
     /// plot traces
-    std::vector< trace > myTrace;
+    std::vector< trace* > myTrace;
 
     int myXinc;
     int myMinY, myMaxY;
