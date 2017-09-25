@@ -15,8 +15,8 @@ int main()
         plot::plot thePlot( fm );
 
         // construct plot trace
-        // displaying 20 points before they scroll off the plot
-        plot::trace& t1 = thePlot.AddRealTimeTrace( 20 );
+        // displaying 100 points before they scroll off the plot
+        plot::trace& t1 = thePlot.AddRealTimeTrace( 100 );
 
         // plot in blue
         t1.color( colors::blue );
@@ -26,11 +26,8 @@ int main()
         theTimer.interval( 300 );
         theTimer.elapse([ &t1 ]()
         {
-            static std::vector< double > d1 { 10, 15, 20, 25, 30, 25, 20, 15, 10 };
             static int p = 0;
-            t1.add( d1[ p++ ]);
-            if( p == 8 )
-                p = 0;
+            t1.add( 10 * sin( p++ / 10.0 ) );
         });
         theTimer.start();
 

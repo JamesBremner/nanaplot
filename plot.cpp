@@ -79,6 +79,8 @@ void trace::bounds( int& min, int& max )
         if( y > max )
             max = y;
     }
+    min--;
+    max++;
 }
 
 void trace::update( paint::graphics& graph )
@@ -88,7 +90,7 @@ void trace::update( paint::graphics& graph )
     int xinc = myPlot->xinc();
     double s = myPlot->Scale();
     int yOffset = myPlot->YOffset();
-    int prev;
+    double prev;
 
     // loop over data points
 
