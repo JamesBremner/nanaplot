@@ -1,4 +1,5 @@
 #include <nana/gui.hpp>
+#include <nana/gui/widgets/label.hpp>
 
 namespace nana
 {
@@ -45,6 +46,26 @@ private:
     colors myColor;
 };
 
+class axis
+{
+public:
+    axis( plot * p );
+
+    ~axis()
+    {
+        delete myLabelMin;
+        delete myLabelMax;
+    }
+
+    /// draw
+    void update( paint::graphics& graph );
+
+private:
+    plot * myPlot;
+    label * myLabelMin;
+    label * myLabelMax;
+};
+
 
 /** 2D plotting */
 class plot
@@ -55,6 +76,11 @@ public:
         @param[in parent window where plot will be drawn
     */
     plot( window parent );
+
+    ~plot()
+    {
+        delete myAxis;
+    }
 
     /** Add a data trace
         @param[in] t the data trace to be added
@@ -73,7 +99,7 @@ public:
     {
         return myMinY;
     }
-    int ymax()
+    int maxY()
     {
         return myMaxY;
     }
@@ -85,6 +111,10 @@ public:
     {
         return myYOffset;
     }
+    window parent()
+    {
+        return myParent;
+    }
 
 private:
 
@@ -92,6 +122,8 @@ private:
     window myParent;
 
     drawing * myDrawing;
+
+    axis * myAxis;
 
     /// plot traces
     std::vector< trace > myTrace;

@@ -18,10 +18,14 @@ plot::plot( window parent )
             graph.width(),
             graph.height() );
 
+        myAxis->update( graph );
+
         // draw all the traces
         for( auto& t : myTrace )
             t.update( graph );
     });
+
+    myAxis = new axis( this );
 }
 
 void plot::CalcScale( int w, int h )
@@ -86,6 +90,27 @@ void trace::update( paint::graphics& graph )
         prev = y;
     }
 }
+
+axis::axis( plot * p )
+    : myPlot( p )
+{
+    myLabelMin = new label( myPlot->parent(),  rectangle{ 10, 10, 50, 50 } );
+    myLabelMin->caption("test");
+    myLabelMax = new label( myPlot->parent(),  rectangle{ 10, 10, 50, 50 } );
+    myLabelMax->caption("test");
+}
+
+void axis::update( paint::graphics& graph )
+{
+    myLabelMin->move( 5,graph.height()-20 );
+    std::stringstream ss;
+    ss << myPlot->minY();
+    myLabelMin->caption(ss.str());
+    ss.str("");
+    ss << myPlot->maxY();
+    myLabelMax->caption(ss.str());
+}
+
 
 }
 }
