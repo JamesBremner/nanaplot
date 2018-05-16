@@ -48,8 +48,8 @@ void plot::CalcScale( int w, int h )
     if( myMaxY == myMinY )
         myScale = 1;
     else
-    myScale = h / ( myMaxY - myMinY );
-    myYOffset = h + myScale * myMinY;
+    myScale = (double) h / ( myMaxY - myMinY );
+    myYOffset = (double) h + myScale * myMinY;
 }
 void trace::add( const std::vector< double >& y )
 {
