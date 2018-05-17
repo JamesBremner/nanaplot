@@ -43,9 +43,9 @@
 			<Add directory="$(#nana.lib)" />
 			<Add directory="$(#boost.lib)" />
 		</Linker>
+		<Unit filename="../plot.cpp" />
+		<Unit filename="../plot.h" />
 		<Unit filename="main.cpp" />
-		<Unit filename="plot.cpp" />
-		<Unit filename="plot.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

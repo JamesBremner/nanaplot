@@ -12,6 +12,9 @@ plot::plot( window parent )
     myDrawing = new drawing( parent );
     myDrawing->draw([this](paint::graphics& graph)
     {
+        if( ! myTrace.size() )
+            return;
+
         // calculate scaling factors
         // so plot will fit
         CalcScale(
@@ -43,15 +46,16 @@ void plot::CalcScale( int w, int h )
         if( max > myMaxY )
             myMaxY = max;
     }
-
+    if( ! maxCount )
+        return;
     myXinc = w / maxCount;
     if( myMaxY == myMinY )
         myScale = 1;
     else
-    myScale = (double) h / ( myMaxY - myMinY );
+        myScale = (double) h / ( myMaxY - myMinY );
     myYOffset = (double) h + myScale * myMinY;
 }
-void trace::add( const std::vector< double >& y )
+void trace::set( const std::vector< double >& y )
 {
     if( myfRealTime )
         throw std::runtime_error("nanaplot error: static data added to realtime trace");
@@ -70,6 +74,8 @@ void trace::add( double y )
 
 void trace::bounds( int& min, int& max )
 {
+    if( ! myY.size() )
+        return;
     min = myY[0];
     max = min;
     for( auto y : myY )

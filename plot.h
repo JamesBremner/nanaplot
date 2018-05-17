@@ -34,10 +34,11 @@ public:
     /** set static data
         @param[in] y vector of data points to display
 
+        Replaces any existing data.  Plot is NOT refreshed.
         An exception is thrown when this is called
-        for a trace that has been converted to real time
+        for a trace that has been converted to real time.
     */
-    void add( const std::vector< double >& y );
+    void set( const std::vector< double >& y );
 
     /** add new value to real time data
         @param[in] y the new data point
