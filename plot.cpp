@@ -1,3 +1,4 @@
+#include "iostream"
 #include <nana/gui.hpp>
 #include "plot.h"
 namespace nana
@@ -24,8 +25,9 @@ plot::plot( window parent )
         myAxis->update( graph );
 
         // draw all the traces
-        for( auto t : myTrace )
+        for( auto t : myTrace ) {
             t->update( graph );
+        }
     });
 
     myAxis = new axis( this );
@@ -39,16 +41,16 @@ void plot::CalcScale( int w, int h )
     {
         if( t->size() > maxCount )
             maxCount = t->size();
-        int min, max;
-        t->bounds( min, max );
-        if( min < myMinY )
-            myMinY = min;
-        if( max > myMaxY )
-            myMaxY = max;
+        int tmin, tmax;
+        t->bounds( tmin, tmax );
+        if( tmin < myMinY )
+            myMinY = tmin;
+        if( tmax > myMaxY )
+            myMaxY = tmax;
     }
     if( ! maxCount )
         return;
-    myXinc = w / maxCount;
+    myXinc = (float)w / maxCount;
     if( myMaxY == myMinY )
         myScale = 1;
     else
@@ -59,7 +61,13 @@ void trace::set( const std::vector< double >& y )
 {
     if( myfRealTime )
         throw std::runtime_error("nanaplot error: static data added to realtime trace");
-    myY = y;
+
+    myY.clear();
+    for( double s : y )
+        myY.push_back( s );
+    //myY = y;
+
+    std::cout << "plot::trace::set " << myY.size() << "\n";
 }
 void trace::add( double y )
 {
@@ -72,28 +80,28 @@ void trace::add( double y )
     myPlot->update();
 }
 
-void trace::bounds( int& min, int& max )
+void trace::bounds( int& tmin, int& tmax )
 {
     if( ! myY.size() )
         return;
-    min = myY[0];
-    max = min;
+    tmin = myY[0];
+   tmax = tmin;
     for( auto y : myY )
     {
-        if( y < min )
-            min = y;
-        if( y > max )
-            max = y;
+        if( y < tmin )
+            tmin = y;
+        if( y > tmax )
+            tmax = y;
     }
-    min--;
-    max++;
+    tmin--;
+    tmax++;
 }
 
 void trace::update( paint::graphics& graph )
 {
     bool first = true;
-    int x = 0;
-    int xinc = myPlot->xinc();
+    float x = 0;
+    float xinc = myPlot->xinc();
     double s = myPlot->Scale();
     int yOffset = myPlot->YOffset();
     double prev;
@@ -123,6 +131,7 @@ void trace::update( paint::graphics& graph )
 
             x += xinc;
             prev = ys;
+
         }
     }
     else

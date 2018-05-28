@@ -144,7 +144,7 @@ public:
         return *t;
     }
 
-    int xinc()
+    float xinc()
     {
         return myXinc;
     }
@@ -174,6 +174,14 @@ public:
         API::refresh_window( myParent );
     }
 
+    void debug()
+    {
+        for( auto t : myTrace )
+        {
+            std::cout << "debugtsize " << t->size() << "\n";
+        }
+    }
+
 private:
 
     ///window where plot will be drawn
@@ -186,7 +194,7 @@ private:
     /// plot traces
     std::vector< trace* > myTrace;
 
-    int myXinc;
+    float myXinc;
     int myMinY, myMaxY;
     double myScale;
     int myYOffset;
