@@ -175,6 +175,11 @@ public:
     */
     trace& AddPointTrace();
 
+    int Y2Pixel( double y ) const
+    {
+        return myYOffset - myScale * y;
+    }
+
     float xinc()
     {
         return myXinc;

@@ -46,7 +46,7 @@ trace& plot::AddPointTrace()
 void plot::CalcScale( int w, int h )
 {
     w *= 0.9;
-    h *= 0.9;
+    h *= 0.95;
 
     int maxCount = 0;
     myTrace[0]->bounds( myMinY, myMaxY );
@@ -69,7 +69,7 @@ void plot::CalcScale( int w, int h )
     else
         myScale = 0.9 * h / ( myMaxY - myMinY );
     myXOffset = 0.05 * w;
-    myYOffset = 1.05 * h + myScale * myMinY;
+    myYOffset = h + myScale * myMinY;
 }
 void trace::set( const std::vector< double >& y )
 {
@@ -137,7 +137,7 @@ void trace::update( paint::graphics& graph )
         for( auto y : myY )
         {
             // scale
-            double ys = yOffset - y * s;
+            double ys =  myPlot->Y2Pixel( y );
 
             if( first )
             {
@@ -163,9 +163,9 @@ void trace::update( paint::graphics& graph )
         for( int k = 0; k < myX.size(); k++ )
         {
             double x = myPlot->XOffset() + xinc * myX[k];
-            double y = yOffset - s * myY[ k ];
             graph.rectangle(
-                rectangle{ x-5, y-5, 10, 10 },
+                rectangle{ x-5,  myPlot->Y2Pixel( myY[ k ] )-5,
+                           10, 10 },
                 false,
                 myColor );
         }
@@ -182,7 +182,7 @@ void trace::update( paint::graphics& graph )
         int yidx = myRealTimeNext;
         do
         {
-            double y = yOffset - s * myY[ yidx ];
+            double y = myPlot->Y2Pixel( myY[ yidx ] );
 
             // the next data point
             // with wrap-around if the end of the vector is reached
@@ -227,13 +227,27 @@ axis::axis( plot * p )
 
 void axis::update( paint::graphics& graph )
 {
-    myLabelMin->move( 5,graph.height()-20 );
+    int mn = 10 * ( myPlot->minY() / 10 );
     std::stringstream ss;
-    ss << myPlot->minY();
+    ss << mn;
     myLabelMin->caption(ss.str());
+    myLabelMin->move( 5,  myPlot->Y2Pixel( mn ) );
+
+    int mx = 10 * ( myPlot->maxY() / 10 );
     ss.str("");
-    ss << myPlot->maxY();
+    ss << mx;
     myLabelMax->caption(ss.str());
+    myLabelMax->move( 5,   myPlot->Y2Pixel( mx ) - 15 );
+
+    graph.line( point(2, myPlot->Y2Pixel( mn )),
+                point(5, myPlot->Y2Pixel( mn )),
+                colors::black );
+    graph.line( point( 2, myPlot->Y2Pixel( mn ) ),
+                point( 2, myPlot->Y2Pixel( mx ) ),
+                colors::black );
+    graph.line( point(2, myPlot->Y2Pixel( mx )),
+                point(5, myPlot->Y2Pixel( mx )),
+                colors::black );
 }
 
 
