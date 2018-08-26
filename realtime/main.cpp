@@ -1,3 +1,4 @@
+#include <iostream>
 #include <nana/gui.hpp>
 #include <nana/gui/timer.hpp>
 #include "../plot.h"

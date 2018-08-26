@@ -25,7 +25,8 @@ plot::plot( window parent )
         myAxis->update( graph );
 
         // draw all the traces
-        for( auto t : myTrace ) {
+        for( auto t : myTrace )
+        {
             t->update( graph );
         }
     });
@@ -33,8 +34,20 @@ plot::plot( window parent )
     myAxis = new axis( this );
 }
 
+trace& plot::AddPointTrace()
+{
+    trace * t = new trace();
+    t->Plot( this );
+    t->points();
+    myTrace.push_back( t );
+    return *t;
+}
+
 void plot::CalcScale( int w, int h )
 {
+    w *= 0.9;
+    h *= 0.9;
+
     int maxCount = 0;
     myTrace[0]->bounds( myMinY, myMaxY );
     for( auto& t : myTrace )
@@ -54,13 +67,14 @@ void plot::CalcScale( int w, int h )
     if( myMaxY == myMinY )
         myScale = 1;
     else
-        myScale = (double) h / ( myMaxY - myMinY );
-    myYOffset = (double) h + myScale * myMinY;
+        myScale = 0.9 * h / ( myMaxY - myMinY );
+    myXOffset = 0.05 * w;
+    myYOffset = 1.05 * h + myScale * myMinY;
 }
 void trace::set( const std::vector< double >& y )
 {
-    if( myfRealTime )
-        throw std::runtime_error("nanaplot error: static data added to realtime trace");
+    if( myType != eType::plot )
+        throw std::runtime_error("nanaplot error: plot data added to non plot trace");
 
     myY.clear();
     for( double s : y )
@@ -71,8 +85,8 @@ void trace::set( const std::vector< double >& y )
 }
 void trace::add( double y )
 {
-    if( ! myfRealTime )
-        throw std::runtime_error("nanaplot error: realtime data added to no realtime trace");
+    if( myType != eType::realtime )
+        throw std::runtime_error("nanaplot error: realtime data added to non realtime trace");
     myY[ myRealTimeNext++ ] = y;
     if( myRealTimeNext >= (int)myY.size() )
         myRealTimeNext = 0;
@@ -80,12 +94,20 @@ void trace::add( double y )
     myPlot->update();
 }
 
+void trace::add( double x, double y )
+{
+    if( myType != eType::point )
+        throw std::runtime_error("nanaplot error: point data added to non point type trace");
+    myX.push_back( x );
+    myY.push_back( y );
+}
+
 void trace::bounds( int& tmin, int& tmax )
 {
     if( ! myY.size() )
         return;
     tmin = myY[0];
-   tmax = tmin;
+    tmax = tmin;
     for( auto y : myY )
     {
         if( y < tmin )
@@ -100,16 +122,17 @@ void trace::bounds( int& tmin, int& tmax )
 void trace::update( paint::graphics& graph )
 {
     bool first = true;
-    float x = 0;
+    float x    = myPlot->XOffset();
     float xinc = myPlot->xinc();
-    double s = myPlot->Scale();
+    double s   = myPlot->Scale();
     int yOffset = myPlot->YOffset();
     double prev;
 
 
-
-    if( ! myfRealTime )
+    switch( myType )
     {
+    case eType::plot:
+
         // loop over data points
         for( auto y : myY )
         {
@@ -133,9 +156,25 @@ void trace::update( paint::graphics& graph )
             prev = ys;
 
         }
-    }
-    else
+        break;
+
+    case eType::point:
+
+        for( int k = 0; k < myX.size(); k++ )
+        {
+            double x = myPlot->XOffset() + xinc * myX[k];
+            double y = yOffset - s * myY[ k ];
+            graph.rectangle(
+                rectangle{ x-5, y-5, 10, 10 },
+                false,
+                myColor );
+        }
+        break;
+
+    case eType::realtime:
+
     {
+
         // loop over data points
 
         // they are stored in a circular buffer
@@ -171,6 +210,9 @@ void trace::update( paint::graphics& graph )
         // check for end of circular buffer
         // ( most recent point )
         while( yidx != myRealTimeNext );
+
+    }
+    break;
     }
 }
 

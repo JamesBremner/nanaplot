@@ -14,7 +14,7 @@ class trace
 public:
 
     trace()
-        : myfRealTime( false )
+        : myType( eType::plot )
     {
 
     }
@@ -25,10 +25,18 @@ public:
     */
     void realTime( int w )
     {
-        myfRealTime = true;
+        myType = eType::realtime;
         myRealTimeNext = 0;
         myY.clear();
         myY.resize( w );
+    }
+
+    /** Convert trace to point operation for scatter plots */
+    void points()
+    {
+        myType = eType::point;
+        myY.clear();
+        myX.clear();
     }
 
     /** set static data
@@ -47,6 +55,16 @@ public:
         for a trace that has not been converted to real time
     */
     void add( double y );
+
+    /** add point to point trace
+        @param[in] x
+        @param[in] y
+
+        An exception is thrown when this is called
+        for a trace that has not been converted to points
+    */
+
+    void add( double x, double y );
 
     /// set color
     void color( const colors & clr )
@@ -72,10 +90,16 @@ public:
 
 private:
     plot * myPlot;
+    std::vector< double > myX;
     std::vector< double > myY;
     colors myColor;
-    bool myfRealTime;
     int myRealTimeNext;
+    enum class eType
+    {
+        plot,
+        realtime,
+        point
+    } myType;
 };
 
 class axis
@@ -144,6 +168,13 @@ public:
         return *t;
     }
 
+    /** Add point trace
+        @return reference to new trace
+
+        A static trace for scatter plots
+    */
+    trace& AddPointTrace();
+
     float xinc()
     {
         return myXinc;
@@ -159,6 +190,10 @@ public:
     double Scale()
     {
         return myScale;
+    }
+    int XOffset()
+    {
+        return myXOffset;
     }
     int YOffset()
     {
@@ -197,6 +232,7 @@ private:
     float myXinc;
     int myMinY, myMaxY;
     double myScale;
+    int myXOffset;
     int myYOffset;
 
     /** calculate scaling factors so plot will fit in window client area

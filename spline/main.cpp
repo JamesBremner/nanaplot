@@ -26,14 +26,21 @@ int main()
         // construct spline curve through input points
         raven::cSpline spline( x, y );
         std::vector< double > curve;
-        for( double x = 0; x < 4; x += 0.1) {
+        for( double x = 0; x < 4.1; x += 0.1) {
             curve.push_back( spline.getY( x ));
         }
 
-        // construct plot trace
+        // construct plot trace to display spline curve
         plot::trace& t1 = thePlot.AddStaticTrace();
         t1.set( curve );
         t1.color( colors::red );
+
+        // construct scatter plot of input points
+        plot::trace& t2 = thePlot.AddPointTrace();
+        for( int k = 0; k < x.size(); k++ )
+        {
+            t2.add( 10 * x[k], y[k] );
+        }
 
         // show and run
         fm.show();
