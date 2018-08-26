@@ -32,3 +32,5 @@
 *.app
 *.layout
 *.depend
+spline/cSpline.cpp
+spline/cSpline.h
