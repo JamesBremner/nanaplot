@@ -39,7 +39,7 @@
 			<Add library="nana" />
 			<Add library="gdi32" />
 			<Add library="comdlg32" />
-			<Add library="boost_system-mgw49-mt-1_63" />
+			<Add library="boost_system-mgw51-mt-1_63" />
 			<Add directory="$(#nana.lib)" />
 			<Add directory="$(#boost.lib)" />
 		</Linker>
