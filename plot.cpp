@@ -9,27 +9,7 @@ namespace plot
 plot::plot( window parent )
     : myParent( parent )
 {
-    // arrange for the plot to be updated when needed
-    myDrawing = new drawing( parent );
-    myDrawing->draw([this](paint::graphics& graph)
-    {
-        if( ! myTrace.size() )
-            return;
-
-        // calculate scaling factors
-        // so plot will fit
-        CalcScale(
-            graph.width(),
-            graph.height() );
-
-        myAxis->update( graph );
-
-        // draw all the traces
-        for( auto t : myTrace )
-        {
-            t->update( graph );
-        }
-    });
+    RegisterDrawingFunction();
 
     myAxis = new axis( this );
 }
@@ -41,6 +21,39 @@ trace& plot::AddPointTrace()
     t->points();
     myTrace.push_back( t );
     return *t;
+}
+
+void plot::RegisterDrawingFunction()
+{
+    /* The drawing object is just defined as a local variable
+
+    When the drawing object gets destroyed, the drawer functions are still alive.
+    The drawing object doesn't manage the life-time of drawer functions,
+    it is just for installing drawer functions.
+
+    */
+    drawing( myParent ).draw([this](paint::graphics& graph)
+    {
+        // check there are traces that need to be drawn
+        if( ! myTrace.size() )
+            return;
+
+        // calculate scaling factors
+        // so plot will fit
+        CalcScale(
+            graph.width(),
+            graph.height() );
+
+        // draw axis
+        myAxis->update( graph );
+
+        // loop over traces
+        for( auto t : myTrace )
+        {
+            // draw a trace
+            t->update( graph );
+        }
+    });
 }
 
 void plot::CalcScale( int w, int h )

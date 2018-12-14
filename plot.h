@@ -227,8 +227,6 @@ private:
     ///window where plot will be drawn
     window myParent;
 
-    drawing * myDrawing;
-
     axis * myAxis;
 
     /// plot traces
@@ -245,6 +243,9 @@ private:
         @param[in] h height
     */
     void CalcScale( int w, int h );
+
+    /// arrange for the plot to be updated when needed
+    void RegisterDrawingFunction();
 
 };
 
